@@ -136,6 +136,23 @@
             background: #fef2f2;
         }
 
+        .search-bar {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+            background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23999' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat 0.85rem center;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #4361ee;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
         .empty-state {
             text-align: center;
             color: #999;
@@ -152,6 +169,7 @@
             <input type="url" id="url-input" placeholder="https://example.com" required>
             <button type="submit">Add Bookmark</button>
         </form>
+        <input type="text" class="search-bar" id="search-input" placeholder="Search bookmarks...">
         <ul class="bookmark-list" id="bookmark-list"></ul>
     </div>
 
@@ -159,6 +177,7 @@
         const form = document.getElementById('add-form');
         const titleInput = document.getElementById('title-input');
         const urlInput = document.getElementById('url-input');
+        const searchInput = document.getElementById('search-input');
         const list = document.getElementById('bookmark-list');
 
         function getBookmarks() {
@@ -171,19 +190,33 @@
 
         function render() {
             const bookmarks = getBookmarks();
+            const query = searchInput.value.trim().toLowerCase();
+
             if (bookmarks.length === 0) {
                 list.innerHTML = '<li class="empty-state">No bookmarks yet. Add one above.</li>';
                 return;
             }
-            list.innerHTML = bookmarks.map((b, i) => `
+
+            const filtered = query
+                ? bookmarks.filter(b => b.title.toLowerCase().includes(query))
+                : bookmarks;
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<li class="empty-state">No bookmarks match your search.</li>';
+                return;
+            }
+
+            list.innerHTML = filtered.map((b) => {
+                const originalIndex = bookmarks.indexOf(b);
+                return `
                 <li class="bookmark-item">
                     <div class="bookmark-info">
                         <div class="bookmark-title">${escapeHtml(b.title)}</div>
                         <div class="bookmark-url"><a href="${escapeHtml(b.url)}" target="_blank" rel="noopener">${escapeHtml(b.url)}</a></div>
                     </div>
-                    <button class="delete-btn" data-index="${i}" aria-label="Delete bookmark">&times;</button>
-                </li>
-            `).join('');
+                    <button class="delete-btn" data-index="${originalIndex}" aria-label="Delete bookmark">&times;</button>
+                </li>`;
+            }).join('');
         }
 
         function escapeHtml(str) {
@@ -191,6 +224,8 @@
             div.textContent = str;
             return div.innerHTML;
         }
+
+        searchInput.addEventListener('input', render);
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
