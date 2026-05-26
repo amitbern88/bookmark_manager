@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmark Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #fff;
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            color: #444;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fafafa;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+            background: #fff;
+        }
+
+        input::placeholder {
+            color: #aaa;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-edit {
+            background: #eef6ff;
+            color: #3b82f6;
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #bdd9ff;
+        }
+
+        .btn-edit:hover {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-save {
+            background: #eefbee;
+            color: #22a722;
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #b6e8b6;
+        }
+
+        .btn-save:hover {
+            background: #22a722;
+            color: #fff;
+        }
+
+        .btn-cancel {
+            background: #f5f5f5;
+            color: #666;
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+        }
+
+        .btn-cancel:hover {
+            background: #666;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #fee;
+            color: #e74c3c;
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid #fcc;
+        }
+
+        .btn-danger:hover {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .bookmark-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        .edit-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .edit-form input, .edit-form select {
+            padding: 0.5rem 0.7rem;
+            font-size: 0.9rem;
+            border: 2px solid #e8e8e8;
+            border-radius: 6px;
+        }
+
+        .edit-form .edit-actions {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .section-header h2 {
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .controls input {
+            padding: 0.5rem 0.8rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 0.9rem;
+            backdrop-filter: blur(4px);
+            width: 180px;
+        }
+
+        .controls input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .controls input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .controls select {
+            padding: 0.5rem 0.8rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-size: 0.9rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .controls select option {
+            color: #333;
+            background: #fff;
+        }
+
+        .controls select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .category-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .category-headline {
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.6rem;
+        }
+
+        .bookmarks-list {
+            list-style: none;
+        }
+
+        .bookmark-item {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .bookmark-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .bookmark-info h3 {
+            margin-bottom: 0.3rem;
+            color: #2d2d2d;
+            font-size: 1.05rem;
+        }
+
+        .bookmark-info a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.85rem;
+            word-break: break-all;
+        }
+
+        .bookmark-info a:hover {
+            text-decoration: underline;
+        }
+
+        .bookmark-category {
+            display: inline-block;
+            margin-top: 0.4rem;
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            color: #764ba2;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 3rem 2rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            border: 2px dashed rgba(255, 255, 255, 0.25);
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bookmark Manager</h1>
+
+        <div class="form-card">
+            <form id="bookmark-form">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" placeholder="Enter bookmark title" required>
+                </div>
+                <div class="form-group">
+                    <label for="url">URL</label>
+                    <input type="url" id="url" placeholder="https://example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" required>
+                        <option value="">Select a category</option>
+                        <option value="Work">Work</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Education">Education</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="News">News</option>
+                        <option value="Social">Social</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Add Bookmark</button>
+            </form>
+        </div>
+
+        <div class="section-header">
+            <h2>Your Bookmarks</h2>
+            <div class="controls">
+                <input type="text" id="search-input" placeholder="Search bookmarks...">
+                <select id="filter-category">
+                    <option value="All">All Categories</option>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Education">Education</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="News">News</option>
+                    <option value="Social">Social</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="bookmarks-container"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('bookmark-form');
+        const container = document.getElementById('bookmarks-container');
+        const filterSelect = document.getElementById('filter-category');
+        const searchInput = document.getElementById('search-input');
+
+        const CATEGORY_ORDER = ['Work', 'Personal', 'Education', 'Entertainment', 'News', 'Social', 'Other'];
+
+        // Clear stale bookmarks from previous versions
+        const STORAGE_VERSION = 'v2';
+        if (localStorage.getItem('bookmarks_version') !== STORAGE_VERSION) {
+            localStorage.removeItem('bookmarks');
+            localStorage.setItem('bookmarks_version', STORAGE_VERSION);
+        }
+
+        function getBookmarks() {
+            return JSON.parse(localStorage.getItem('bookmarks') || '[]');
+        }
+
+        function saveBookmarks(bookmarks) {
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function renderBookmarks() {
+            const bookmarks = getBookmarks();
+            const filter = filterSelect.value;
+            const query = searchInput.value.trim().toLowerCase();
+
+            let filtered = bookmarks;
+
+            if (filter !== 'All') {
+                filtered = filtered.filter(b => b.category === filter);
+            }
+
+            if (query) {
+                filtered = filtered.filter(b =>
+                    b.title.toLowerCase().includes(query) ||
+                    b.url.toLowerCase().includes(query)
+                );
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No bookmarks found.</p></div>';
+                return;
+            }
+
+            const groups = {};
+            filtered.forEach(b => {
+                if (!groups[b.category]) groups[b.category] = [];
+                groups[b.category].push(b);
+            });
+
+            let html = '';
+            CATEGORY_ORDER.forEach(cat => {
+                if (!groups[cat]) return;
+                html += `<div class="category-group">`;
+                html += `<div class="category-headline">${escapeHtml(cat)}</div>`;
+                html += `<ul class="bookmarks-list">`;
+                groups[cat].forEach(bookmark => {
+                    html += `
+                        <li class="bookmark-item">
+                            <div class="bookmark-info">
+                                <h3>${escapeHtml(bookmark.title)}</h3>
+                                <a href="${escapeHtml(bookmark.url)}" target="_blank" rel="noopener">${escapeHtml(bookmark.url)}</a>
+                            </div>
+                            <div class="bookmark-actions">
+                                <button class="btn-edit" data-id="${escapeHtml(bookmark.id)}">Edit</button>
+                                <button class="btn-danger" data-id="${escapeHtml(bookmark.id)}">Delete</button>
+                            </div>
+                        </li>`;
+                });
+                html += `</ul></div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const bookmark = {
+                id: Date.now().toString(),
+                title: document.getElementById('title').value.trim(),
+                url: document.getElementById('url').value.trim(),
+                category: document.getElementById('category').value
+            };
+
+            const bookmarks = getBookmarks();
+            bookmarks.unshift(bookmark);
+            saveBookmarks(bookmarks);
+            renderBookmarks();
+            form.reset();
+        });
+
+        container.addEventListener('click', function(e) {
+            const deleteBtn = e.target.closest('.btn-danger');
+            if (deleteBtn) {
+                const id = deleteBtn.dataset.id;
+                const bookmarks = getBookmarks().filter(b => b.id !== id);
+                saveBookmarks(bookmarks);
+                renderBookmarks();
+                return;
+            }
+
+            const editBtn = e.target.closest('.btn-edit');
+            if (editBtn) {
+                const id = editBtn.dataset.id;
+                const bookmarks = getBookmarks();
+                const bookmark = bookmarks.find(b => b.id === id);
+                if (!bookmark) return;
+
+                const li = editBtn.closest('.bookmark-item');
+                const categoryOptions = CATEGORY_ORDER.map(cat =>
+                    `<option value="${cat}" ${cat === bookmark.category ? 'selected' : ''}>${cat}</option>`
+                ).join('');
+
+                li.innerHTML = `
+                    <form class="edit-form" data-id="${escapeHtml(bookmark.id)}">
+                        <input type="text" class="edit-title" value="${escapeHtml(bookmark.title)}" required>
+                        <input type="url" class="edit-url" value="${escapeHtml(bookmark.url)}" required>
+                        <select class="edit-category">${categoryOptions}</select>
+                        <div class="edit-actions">
+                            <button type="submit" class="btn-save">Save</button>
+                            <button type="button" class="btn-cancel">Cancel</button>
+                        </div>
+                    </form>`;
+                li.querySelector('.edit-title').focus();
+                return;
+            }
+
+            const cancelBtn = e.target.closest('.btn-cancel');
+            if (cancelBtn) {
+                renderBookmarks();
+                return;
+            }
+        });
+
+        container.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const editForm = e.target.closest('.edit-form');
+            if (!editForm) return;
+            const id = editForm.dataset.id;
+            const newTitle = editForm.querySelector('.edit-title').value.trim();
+            const newUrl = editForm.querySelector('.edit-url').value.trim();
+            const newCategory = editForm.querySelector('.edit-category').value;
+
+            if (!newTitle || !newUrl) return;
+
+            const bookmarks = getBookmarks();
+            const bookmark = bookmarks.find(b => b.id === id);
+            if (bookmark) {
+                bookmark.title = newTitle;
+                bookmark.url = newUrl;
+                bookmark.category = newCategory;
+                saveBookmarks(bookmarks);
+            }
+            renderBookmarks();
+        });
+
+        container.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && e.target.closest('.edit-form')) {
+                renderBookmarks();
+            }
+        });
+
+        filterSelect.addEventListener('change', renderBookmarks);
+        searchInput.addEventListener('input', renderBookmarks);
+
+        renderBookmarks();
+    </script>
+</body>
+</html>
